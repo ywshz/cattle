@@ -127,6 +127,7 @@ public class FileEntity implements java.io.Serializable {
 		this.job = job;
 	}
 
+    @JsonIgnore
 	@OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "parent")
 	public Set<FileEntity> getFiles() {
 		return this.files;

@@ -1,11 +1,13 @@
 package org.yws.cattle.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.yws.cattle.models.FileEntity;
 import org.yws.cattle.repositories.FileRepository;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,6 +32,21 @@ public class FileService {
             return fileRepository.findByParent(null);
         }else{
             return fileRepository.findByParent(new FileEntity(parent));
+        }
+    }
+
+    public List<FileEntity> listFilesByParent(Long parent,String[]... sortProperties){
+
+        List<Sort.Order> orders = new ArrayList<Sort.Order>();
+        for(String[] sp : sortProperties){
+            orders.add(new Sort.Order(Sort.Direction.fromString(sp[1]),sp[0]));
+        }
+        Sort sort = new Sort(orders);
+
+        if(parent == null){
+            return fileRepository.findByParent(null,sort);
+        }else{
+            return fileRepository.findByParent(new FileEntity(parent),sort);
         }
     }
 

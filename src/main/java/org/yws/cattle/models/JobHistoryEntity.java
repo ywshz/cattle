@@ -1,5 +1,7 @@
 package org.yws.cattle.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -10,12 +12,14 @@ import java.sql.Timestamp;
 @Table(name = "job_history", schema = "", catalog = "cattle")
 public class JobHistoryEntity {
     private long id;
+    @JsonIgnore
     private JobEntity job;
     private Timestamp startTime;
     private Timestamp endTime;
-    private short result;
+    private JobRunResult result;
     private String content;
     private TriggerType triggerType;
+    private String executionMachine;
 
     @Id
     @Column(name = "id")
@@ -59,11 +63,12 @@ public class JobHistoryEntity {
 
     @Basic
     @Column(name = "result")
-    public short getResult() {
+    @Enumerated(EnumType.ORDINAL)
+    public JobRunResult getResult() {
         return result;
     }
 
-    public void setResult(short result) {
+    public void setResult(JobRunResult result) {
         this.result = result;
     }
 
@@ -88,6 +93,16 @@ public class JobHistoryEntity {
         this.triggerType = triggerType;
     }
 
+    @Basic
+    @Column(name = "execution_machine")
+    public String getExecutionMachine() {
+        return executionMachine;
+    }
+
+    public void setExecutionMachine(String executionMachine) {
+        this.executionMachine = executionMachine;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -110,7 +125,7 @@ public class JobHistoryEntity {
         int result1 = (int) (id ^ (id >>> 32));
         result1 = 31 * result1 + (startTime != null ? startTime.hashCode() : 0);
         result1 = 31 * result1 + (endTime != null ? endTime.hashCode() : 0);
-        result1 = 31 * result1 + (int) result;
+        result1 = 31 * result1 + (result != null ? result.hashCode() : 0);
         result1 = 31 * result1 + (content != null ? content.hashCode() : 0);
         result1 = 31 * result1 + triggerType.ordinal();
         return result1;

@@ -22,7 +22,7 @@
         <%@include file="common/sidebar.jsp" %>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
 
-            <div id="right-content-div">
+            <div id="right-content-div" class="hide">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="panel panel-default">
@@ -79,6 +79,12 @@
                                         <td><strong>依赖/定时:</strong></td>
                                         <td id="run-time-td">?</td>
                                     </tr>
+                                    <tr>
+                                        <td><strong>分配策略:</strong></td>
+                                        <td id="allocation-type-td">自动</td>
+                                        <td><strong>执行机器:</strong></td>
+                                        <td id="execution-machine-td">自动</td>
+                                    </tr>
                                 </table>
                             </div>
                         </div>
@@ -103,6 +109,7 @@
                                 <th>状态</th>
                                 <th>运行时间</th>
                                 <th>结束时间</th>
+                                <th>执行机器</th>
                                 <th>操作</th>
                             </tr>
                             </thead>
@@ -144,9 +151,9 @@
 
                         <div class="col-sm-10">
                             <select class="form-control" id="inputScheduleType">
-                                <option value="hive">Hive脚本</option>
-                                <option value="shell">Shell脚本</option>
-                                <option value="python">Python脚本</option>
+                                <option value="0">Shell脚本</option>
+                                <option value="1">Hive脚本</option>
+                                <option value="2">Python脚本</option>
                             </select>
                         </div>
                     </div>
@@ -167,13 +174,30 @@
                                     依赖
                                 </label>
                                 <input type="text" class="form-control" id="dependenciesSel" name="dependencies"
-                                       readonly="readonly" onclick="showMenu();">
+                                       readonly="readonly" onclick="">
 
                                 <div id="menuContent" style="display:none;" class="zTreeDemoBackground left">
                                     <ul id="dependencyTree" class="ztree">
                                     </ul>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="" class="col-sm-2 control-label">分配策略:</label>
+                        <div class="col-sm-10">
+                            <select class="form-control" id="allocationTypeSel">
+                                <option value="0">自动</option>
+                                <option value="1">手动分配</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="" class="col-sm-2 control-label">执行机器:</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="executionMachineinput" name="executionMachine"
+                                   placeholder="若分配策略为自动，此配置无效">
                         </div>
                     </div>
 
@@ -185,7 +209,10 @@
                     </div>
 
                     <div class="form-group">
-                        <textarea id="edit-script"></textarea>
+                        <div class="col-sm-2"></div>
+                        <div class="col-sm-11">
+                            <textarea id="edit-script"></textarea>
+                        </div>
                     </div>
                 </form>
 

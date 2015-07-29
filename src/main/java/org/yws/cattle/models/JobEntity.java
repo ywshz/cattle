@@ -1,7 +1,10 @@
 package org.yws.cattle.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,14 +22,40 @@ public class JobEntity {
     private String dependencies;
     private String script;
     private Timestamp createTime;
+    private AllocationType allocationType;
+    private String executionMachine;
 
-    private FileEntity folder;
+    private FileEntity file;
 
-    private List<JobEntity> dependencyList;
+    private List<JobEntity> dependencyList = new ArrayList<JobEntity>();
 
     private List<JobHistoryEntity> jobHistories;
 
+    public JobEntity() {
+    }
+
+    public static JobEntity getDefault(FileEntity file){
+        JobEntity jobEntity = new JobEntity();
+        if(file.getFileType()==FileType.FILE){
+            jobEntity.setName("新Job");
+        }else{
+            jobEntity.setName("新文件夹");
+        }
+        jobEntity.setFile(file);
+        jobEntity.setJobType(JobType.SHELL);
+        jobEntity.setScheduleType(ScheduleType.CRON);
+        jobEntity.setCron("0 0 0 * * ?");
+        jobEntity.setScript("请编辑修改");
+        jobEntity.setAllocationType(AllocationType.AUTO);
+        return jobEntity;
+    }
+
+    public JobEntity(long id) {
+        this.id = id;
+    }
+
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     public long getId() {
         return id;
@@ -119,14 +148,15 @@ public class JobEntity {
         this.createTime = createTime;
     }
 
+    @JsonIgnore
     @ManyToOne(targetEntity=FileEntity.class,fetch = FetchType.LAZY,cascade=CascadeType.REMOVE)
     @JoinColumn(name="file_id", referencedColumnName="id",nullable=false)
-    public FileEntity getFolder() {
-        return folder;
+    public FileEntity getFile() {
+        return file;
     }
 
-    public void setFolder(FileEntity folder) {
-        this.folder = folder;
+    public void setFile(FileEntity file) {
+        this.file = file;
     }
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, mappedBy = "job")
@@ -147,6 +177,27 @@ public class JobEntity {
         this.dependencyList = dependencyList;
     }
 
+    @Basic
+    @Column(name = "allocation_type")
+    @Enumerated(EnumType.ORDINAL)
+    public AllocationType getAllocationType() {
+        return allocationType;
+    }
+
+    public void setAllocationType(AllocationType allocationType) {
+        this.allocationType = allocationType;
+    }
+
+    @Basic
+    @Column(name = "execution_machine")
+    public String getExecutionMachine() {
+        return executionMachine;
+    }
+
+    public void setExecutionMachine(String executionMachine) {
+        this.executionMachine = executionMachine;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -155,14 +206,22 @@ public class JobEntity {
         JobEntity jobEntity = (JobEntity) o;
 
         if (id != jobEntity.id) return false;
-        if (jobType != jobEntity.jobType) return false;
-        if (scheduleStatus != jobEntity.scheduleStatus) return false;
-        if (scheduleType != jobEntity.scheduleType) return false;
+        if (allocationType != jobEntity.allocationType) return false;
         if (createTime != null ? !createTime.equals(jobEntity.createTime) : jobEntity.createTime != null) return false;
         if (cron != null ? !cron.equals(jobEntity.cron) : jobEntity.cron != null) return false;
         if (dependencies != null ? !dependencies.equals(jobEntity.dependencies) : jobEntity.dependencies != null)
             return false;
+        if (dependencyList != null ? !dependencyList.equals(jobEntity.dependencyList) : jobEntity.dependencyList != null)
+            return false;
+        if (executionMachine != null ? !executionMachine.equals(jobEntity.executionMachine) : jobEntity.executionMachine != null)
+            return false;
+        if (file != null ? !file.equals(jobEntity.file) : jobEntity.file != null) return false;
+        if (jobHistories != null ? !jobHistories.equals(jobEntity.jobHistories) : jobEntity.jobHistories != null)
+            return false;
+        if (jobType != jobEntity.jobType) return false;
         if (name != null ? !name.equals(jobEntity.name) : jobEntity.name != null) return false;
+        if (scheduleStatus != jobEntity.scheduleStatus) return false;
+        if (scheduleType != jobEntity.scheduleType) return false;
         if (script != null ? !script.equals(jobEntity.script) : jobEntity.script != null) return false;
 
         return true;
@@ -172,13 +231,18 @@ public class JobEntity {
     public int hashCode() {
         int result = (int) (id ^ (id >>> 32));
         result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + jobType.ordinal();
-        result = 31 * result + scheduleType.ordinal();
-        result = 31 * result + scheduleStatus.ordinal();
+        result = 31 * result + (jobType != null ? jobType.hashCode() : 0);
+        result = 31 * result + (scheduleType != null ? scheduleType.hashCode() : 0);
+        result = 31 * result + (scheduleStatus != null ? scheduleStatus.hashCode() : 0);
         result = 31 * result + (cron != null ? cron.hashCode() : 0);
         result = 31 * result + (dependencies != null ? dependencies.hashCode() : 0);
         result = 31 * result + (script != null ? script.hashCode() : 0);
         result = 31 * result + (createTime != null ? createTime.hashCode() : 0);
+        result = 31 * result + (allocationType != null ? allocationType.hashCode() : 0);
+        result = 31 * result + (executionMachine != null ? executionMachine.hashCode() : 0);
+        result = 31 * result + (file != null ? file.hashCode() : 0);
+        result = 31 * result + (dependencyList != null ? dependencyList.hashCode() : 0);
+        result = 31 * result + (jobHistories != null ? jobHistories.hashCode() : 0);
         return result;
     }
 }

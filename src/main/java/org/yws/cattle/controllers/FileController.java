@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.yws.cattle.models.CommonResponse;
 import org.yws.cattle.models.FileEntity;
+import org.yws.cattle.models.FileType;
 import org.yws.cattle.service.FileService;
 
 import java.util.List;
@@ -40,9 +41,13 @@ public class FileController {
 
     @RequestMapping(value = "save")
     @ResponseBody
-    public CommonResponse save(FileEntity fileEntity) {
+    public CommonResponse save(String name,Long parent,Integer fileType) {
         Long id = null;
         try {
+            FileEntity fileEntity = new FileEntity();
+            fileEntity.setName(name);
+            fileEntity.setParent(new FileEntity(parent));
+            fileEntity.setFileType(FileType.fromInteger(fileType));
             id = fileService.save(fileEntity);
         } catch (Exception e) {
             return new CommonResponse(0, "保存失败", e.getMessage());

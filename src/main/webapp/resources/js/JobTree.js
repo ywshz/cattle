@@ -1,11 +1,14 @@
 var JobTree = {
+    treeObject : null,
+    selectedNode: null,
+    rMenu: $("#rMenu"),
     init: function () {
         $.fn.zTree.init($("#tree"), {
             async: {
                 enable: true,
                 url: BASE_PATH + "/tree/list_files.do",
                 autoParam: ["id"],
-                otherParam:{"properties":"fileType","directions":"desc"}
+                otherParam: {"properties": "fileType", "directions": "desc"}
             },
             view: {
                 selectedMulti: false
@@ -26,9 +29,9 @@ var JobTree = {
                         zTree = $.fn.zTree.getZTreeObj("tree");
                         var rootNode = zTree.getNodes()[0];
                         zTree.expandNode(rootNode, true, true, true);
-                    }else{
-                        if(treeNode.folder){
-                            treeNode.isParent=true;
+                    } else {
+                        if (treeNode.folder) {
+                            treeNode.isParent = true;
                         }
                     }
                 },
@@ -40,12 +43,14 @@ var JobTree = {
                 onRightClick: rightClick
             }
         });
-
+        this.treeObject =  $.fn.zTree.getZTreeObj("tree");
         this.hideRightClickMenu();
         initContextMenuFunction();
     },
-    rMenu: $("#rMenu"),
     showRightClickMenu: function (isRoot, isFolder, x, y) {
+        var nodes =  this.treeObject.getSelectedNodes();
+        JobTree.selectedNode = nodes[0];
+
         $("#rMenu button").show();
         if (isFolder) {
             //$("#add-group-btn").hide();
@@ -68,7 +73,17 @@ var JobTree = {
         $("body").unbind("mousedown", onBodyMouseDown);
         $(window).unbind("mousedown", onBodyMouseDown);
     },
-    onFileClick : function(fileId){
+    addTreeNode : function(newNode){
+        //this.treeObject.addNodes(this.treeObject.getSelectedNodes()[0], newNode);
+        this.treeObject.reAsyncChildNodes(this.selectedNode, "refresh");
+    },
+    onFileClick: function (fileId) {
+
+    },
+    onAddFolder: function (fileId) {
+
+    },
+    onAddFile: function (fileId) {
 
     }
 };
@@ -84,46 +99,14 @@ function rightClick(event, treeId, treeNode) {
 }
 
 function initContextMenuFunction() {
-    $("#add-group-btn").bind("click", {isParent: true}, add);
-    $("#add-job-btn").bind("click", {isParent: false}, add);
-}
-
-function add(e) {
-    JobTree.hideRightClickMenu();
-
-    var zTree = $.fn.zTree.getZTreeObj("tree"),
-        isParent = e.data.isParent,
-        nodes = zTree.getSelectedNodes(),
-        treeNode = nodes[0];
-    if (treeNode) {
-        var name = "新文件";
-        var type = "File";
-        if (isParent) {
-            name = "新目录";
-            type = "Folder";
-            $.post(BASE_PATH + "/jobs/addgroup.do", {"name": name, parentId: treeNode.id}, function (res) {
-                if (res.success) {
-                    refreshNode("refresh", true);
-                } else {
-                    alert("Error");
-                }
-            });
-        } else {
-            $.post(BASE_PATH + "/jobs/addjob.do", {
-                "name": name,
-                isParent: isParent,
-                "type": type,
-                "groupId": treeNode.id
-            }, function (res) {
-                if (res.success) {
-                    refreshNode("refresh", false);
-                } else {
-                    alert("Error");
-                }
-            });
-        }
-
-    }
+    $("#add-group-btn").click(function(){
+        JobTree.hideRightClickMenu();
+        JobTree.onAddFolder(JobTree.selectedNode.id);
+    });
+    $("#add-job-btn").click(function(){
+        JobTree.hideRightClickMenu();
+        JobTree.onAddFile(JobTree.selectedNode.id);
+    });
 }
 
 function refreshNode(type, silent) {
@@ -144,11 +127,11 @@ function refreshNode(type, silent) {
 
 
 function OnLeftClick(event, treeId, treeNode) {
+    JobTree.selectedNode = treeNode;
     if (!treeNode.isParent) {
         JobTree.onFileClick(treeNode.id);
     }
 }
-
 
 
 function onBodyMouseDown(event) {
@@ -181,8 +164,12 @@ function zTreeOnRemove(event, treeId, treeNode) {
 }
 
 
-function zTreeOnExpand(event, treeId, treeNode){
-    $.post(BASE_PATH + "/tree/list_files",{parent : treeNode.id, properties:'fileType',directions:'desc'}, function (res) {
+function zTreeOnExpand(event, treeId, treeNode) {
+    $.post(BASE_PATH + "/tree/list_files", {
+        parent: treeNode.id,
+        properties: 'fileType',
+        directions: 'desc'
+    }, function (res) {
         $.each(res, function (key, data) {
             var nodes = zTree.getNodesByParam("id", data);
             for (var i = 0, l = nodes.length; i < l; i++) {

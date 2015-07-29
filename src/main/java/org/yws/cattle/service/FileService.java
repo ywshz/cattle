@@ -4,7 +4,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.yws.cattle.models.FileEntity;
+import org.yws.cattle.models.FileType;
+import org.yws.cattle.models.JobEntity;
 import org.yws.cattle.repositories.FileRepository;
+import org.yws.cattle.repositories.JobRepository;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -18,9 +21,15 @@ import java.util.List;
 public class FileService {
     @Autowired
     private FileRepository fileRepository;
+    @Autowired
+    private JobRepository jobRepository;
 
     public Long save(FileEntity fileEntity){
-        return fileRepository.save(fileEntity).getId();
+        Long fileId = fileRepository.save(fileEntity).getId();
+        if(fileEntity.getFileType()== FileType.FILE){
+            jobRepository.save(JobEntity.getDefault(fileEntity));
+        }
+        return fileId;
     }
 
     public FileEntity findOne(Long id){

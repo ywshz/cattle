@@ -60,6 +60,7 @@ public class FileEntity implements java.io.Serializable {
 
 	// Property accessors
 	@Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "id", unique = true, nullable = false)
 	public Long getId() {
 		return this.id;

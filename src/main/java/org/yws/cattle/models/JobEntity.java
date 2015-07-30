@@ -43,6 +43,7 @@ public class JobEntity {
         }
         jobEntity.setFile(file);
         jobEntity.setJobType(JobType.SHELL);
+        jobEntity.setScheduleStatus(ScheduleStatus.OFF);
         jobEntity.setScheduleType(ScheduleType.CRON);
         jobEntity.setCron("0 0 0 * * ?");
         jobEntity.setScript("请编辑修改");

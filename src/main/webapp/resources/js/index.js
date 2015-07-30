@@ -2,6 +2,38 @@
     var IndexPage = {
         editor: null,
         scriptView: null,
+        jobEntity: {
+            data: {
+                id: null,
+                name: null,
+                jobType: null,
+                scheduleType: null,
+                scheduleStatus: null,
+                cron: null,
+                dependencies: null,
+                script: null,
+                createTime: null,
+                allocationType: null,
+                executionMachine: null
+            },
+            build: function (job) {
+                IndexPage.jobEntity.data = job;
+
+                //if(this.data.jobType=='SHELL') this.data.jobType=0;
+                //else if(this.data.jobType=='HIVE') this.data.jobType=1;
+                //else if(this.data.jobType=='PYTHON') this.data.jobType=2;
+                //
+                //if(this.data.scheduleType=='CRON') this.data.scheduleType=0;
+                //else if(this.data.scheduleType=='DEPENDENCY') this.data.scheduleType=1;
+                //
+                //if(this.data.scheduleStatus=='ON') this.data.scheduleStatus=0;
+                //else if(this.data.scheduleStatus=='OFF') this.data.scheduleStatus=1;
+                //
+                //if(this.data.allocationType=='AUTO') this.data.allocationType=0;
+                //else if(this.data.allocationType=='ASSIGN') this.data.allocationType=1;
+            }
+        },
+        treeObject : null,
         initEditor: function () {
             editor = CodeMirror.fromTextArea(document.getElementById("edit-script"), {
                 lineNumbers: true,
@@ -93,21 +125,9 @@
                     }
                 });
             });
-            $("#delete-btn").click(function () {
-                $.post(BASE_PATH + "/jobs/deletejob.do", {id: $("#viewing-job-input").val()}, function (res) {
-                    var treeObj = $.fn.zTree.getZTreeObj("tree");
-                    var nodes = treeObj.getSelectedNodes();
-                    for (var i = 0, l = nodes.length; i < l; i++) {
-                        treeObj.removeNode(nodes[i]);
-                    }
-                    if (res.success) {
-                        $("#right-content-div").hide();
-                        alert("删除成功");
-                    } else {
-                        alsert(res.message);
-                    }
-                });
-            });
+            $("#delete-btn").bind("click",this.removeJob);
+
+            $("#update-job-btn").bind("click", this.updateJob);
 
             $("#dependenciesSel").click(function () {
                 IndexPage.showDependencyTree();
@@ -118,26 +138,27 @@
             });
         },
         initTree: function () {
+            this.treeObject = $.fn.zTree.getZTreeObj("tree");
             JobTree.onFileClick = function (fileId) {
                 IndexPage.loadJob(fileId);
             }
 
             JobTree.onAddFolder = function (fileId) {
-                $.post(BASE_PATH+"/file/save",{"parent":fileId,name:"新文件夹",fileType:1},function(res){
-                    if(res.succeed){
-                        JobTree.addTreeNode({id: res.data,name:"新文件夹",isParent:true});
-                    }else{
-                        Noty.error("操作发生异常:"+res.message);
+                $.post(BASE_PATH + "/file/save", {"parent": fileId, name: "新文件夹", fileType: 1}, function (res) {
+                    if (res.succeed) {
+                        JobTree.addTreeNode({id: res.data, name: "新文件夹", isParent: true});
+                    } else {
+                        Noty.error("操作发生异常:" + res.message);
                     }
                 });
             }
 
             JobTree.onAddFile = function (fileId) {
-                $.post(BASE_PATH+"/file/save",{"parent":fileId,name:"新Job",fileType:0},function(res){
-                    if(res.succeed){
-                        JobTree.addTreeNode({id: res.data,name:"新Job",isParent:false});
-                    }else{
-                        Noty.error("操作发生异常:"+res.message);
+                $.post(BASE_PATH + "/file/save", {"parent": fileId, name: "新Job", fileType: 0}, function (res) {
+                    if (res.succeed) {
+                        JobTree.addTreeNode({id: res.data, name: "新Job", isParent: false});
+                    } else {
+                        Noty.error("操作发生异常:" + res.message);
                     }
                 });
             }
@@ -188,8 +209,8 @@
         },
         lastViewFile: '',
         lastViewJob: '',
-        loadJob: function (fileId) {
-            if (this.lastViewFile == fileId) {
+        loadJob: function (fileId,forceLoad) {
+            if (forceLoad==false && this.lastViewFile == fileId) {
                 return;
             }
             this.lastViewFile = fileId;
@@ -199,6 +220,8 @@
                 } else {
                     IndexPage.lastViewJob = job.id;
                     $("#right-content-div").removeClass("hide");
+
+                    IndexPage.jobEntity.build(job);
                     IndexPage.freshJobView(job);
                     IndexPage.refreshHistoryView(job.id);
                 }
@@ -214,24 +237,13 @@
             $("#allocation-type-td").text(data.allocationType == 'AUTO' ? '自动' : '指定');
             $("#execution-machine-td").text(data.allocationType != 'AUTO' ? data.executionMachine : '自动');
 
-            //        if(data.script) $("#script-p").html(data.script.replace(/\n/gi, "<br/>").replace(/\r/gi, "<br/>"));
             scriptView.setValue(data.script == null ? "" : data.script);
             $("#viewing-job-input").val(data.id);
 
             $("#inputName").val(data.name);
-            if (data.jobType == 'SHELL') {
-                $("#inputScheduleType").val(0);
-            } else if (data.jobType == 'HIVE') {
-                $("#inputScheduleType").val(1);
-            } else if (data.jobType == 'PYTHON') {
-                $("#inputScheduleType").val(2);
-            }
+            $("#inputScheduleType").val(data.jobType);
 
-            if (data.scheduleType == 'AUTO') {
-                $("#allocationTypeSel").val(0);
-            } else {
-                $("#allocationTypeSel").val(1);
-            }
+            $("#allocationTypeSel").val(data.allocationType);
             $("#executionMachineinput").val(data.executionMachine);
             if (data.scheduleType == 'CRON') {
                 $("#radioSchedualByTime").prop("checked", true);
@@ -296,7 +308,35 @@
 
             });
         },
+        updateJob: function () {
+            var param = {};
+            param.id=IndexPage.jobEntity.data.id;
+            param.name = $("#inputName").val()
+            param.jobType = $("#inputScheduleType").val()
+            param.scheduleType = $('input[type="radio"][name="scheduleType"]:checked').val()
+            param.cron = $("#inputCron").val()
+            param.dependencies = $("#dependenciesSel").val()
+            param.script = editor.getValue()
+            param.allocationType = $("#allocationTypeSel").val()
+            param.executionMachine = $("#executionMachineinput").val()
 
+            $.post(BASE_PATH + "/job/update_job.do", param,
+                function (res) {
+                    if (!res.succeed) {
+                        Noty.error("操作失败!" + res.message);
+                        return;
+                    }
+
+                    var nodes = IndexPage.treeObject.getSelectedNodes()
+                    nodes[0].name = param.name;
+                    IndexPage.treeObject.updateNode(nodes[0]);
+
+                    $('#editModal').modal('hide');
+                    var forceReload = true;
+                    IndexPage.loadJob(IndexPage.lastViewFile,forceReload);
+                    Noty.info("修改成功!");
+                });
+        },
         showDependencyTree: function () {
             $("#menuContent").show();
             $(window).bind("mousedown", function (event) {
@@ -309,6 +349,25 @@
         hideDependencyTree: function () {
             $("#menuContent").show();
             $(window).unbind("mousedown");
+        },
+
+        removeFolder : function(fileId){
+
+        },
+
+        removeJob : function(){
+            $.post(BASE_PATH + "/job/delete.do", {jobId: IndexPage.lastViewJob}, function (res) {
+                var nodes = IndexPage.treeObject.getSelectedNodes();
+                for (var i = 0, l = nodes.length; i < l; i++) {
+                    IndexPage.treeObject.removeNode(nodes[i]);
+                }
+                if (res.succeed) {
+                    $("#right-content-div").addClass("hide");
+                    Noty.info("删除成功");
+                } else {
+                    Noty.error("删除失败，" + res.message);
+                }
+            });
         }
 
     }

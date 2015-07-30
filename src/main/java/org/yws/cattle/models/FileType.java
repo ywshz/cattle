@@ -15,4 +15,13 @@ public enum FileType {
         return type == 0 ? FileType.FILE : FileType.FOLDER;
     }
 
+    public static FileType get(int source) {
+        for (FileType e : values()) {
+            if (e.ordinal() == source) {
+                return e;
+            }
+        }
+        return null;
+    }
+
 }

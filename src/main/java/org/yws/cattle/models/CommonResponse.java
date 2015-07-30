@@ -6,6 +6,8 @@ import java.io.Serializable;
  * Created by ywszjut on 15/7/27.
  */
 public class CommonResponse implements Serializable {
+    public static final int SUCCESS = 1;
+    public static final int FAILED = 0;
 
     private int code;
     private boolean succeed;
@@ -13,11 +15,24 @@ public class CommonResponse implements Serializable {
     private Object data;
 
     public CommonResponse() {
+        this.code = SUCCESS;
     }
 
     public CommonResponse(int code, String message) {
         this.code = code;
         this.message = message;
+    }
+
+    public static CommonResponse SUCCESS(String message) {
+        return new CommonResponse(SUCCESS, message);
+    }
+
+    public static CommonResponse SUCCESS() {
+        return CommonResponse.SUCCESS("");
+    }
+
+    public static CommonResponse FAILED(String message) {
+        return new CommonResponse(FAILED, message);
     }
 
     public CommonResponse(int code, String message, Object data) {
@@ -51,7 +66,7 @@ public class CommonResponse implements Serializable {
     }
 
     public boolean isSucceed() {
-        return code==1;
+        return code == 1;
     }
 
     public void setSucceed(boolean succeed) {

@@ -83,7 +83,7 @@
                                         <td><strong>分配策略:</strong></td>
                                         <td id="allocation-type-td">自动</td>
                                         <td><strong>执行机器:</strong></td>
-                                        <td id="execution-machine-td">自动</td>
+                                        <td id="execution-machine-td"></td>
                                     </tr>
                                 </table>
                             </div>
@@ -151,9 +151,9 @@
 
                         <div class="col-sm-10">
                             <select class="form-control" id="inputScheduleType">
-                                <option value="0">Shell脚本</option>
-                                <option value="1">Hive脚本</option>
-                                <option value="2">Python脚本</option>
+                                <option value="SHELL">Shell脚本</option>
+                                <option value="HIVE">Hive脚本</option>
+                                <option value="PYTHON">Python脚本</option>
                             </select>
                         </div>
                     </div>
@@ -163,14 +163,14 @@
                         <div class="col-sm-10">
                             <div class="radio">
                                 <label>
-                                    <input type="radio" name="scheduleType" id="radioSchedualByTime" value="1">
+                                    <input type="radio" name="scheduleType" id="radioSchedualByTime" value="CRON">
                                     定时表达式
                                 </label>
                                 <input type="text" class="form-control" id="inputCron" value="0 0 0 * * ?">
                             </div>
                             <div class="radio">
                                 <label>
-                                    <input type="radio" name="scheduleType" id="radioSchedualByDependency" value="2">
+                                    <input type="radio" name="scheduleType" id="radioSchedualByDependency" value="DEPENDENCY">
                                     依赖
                                 </label>
                                 <input type="text" class="form-control" id="dependenciesSel" name="dependencies"
@@ -188,8 +188,8 @@
                         <label for="" class="col-sm-2 control-label">分配策略:</label>
                         <div class="col-sm-10">
                             <select class="form-control" id="allocationTypeSel">
-                                <option value="0">自动</option>
-                                <option value="1">手动分配</option>
+                                <option value="AUTO">自动</option>
+                                <option value="ASSIGN">手动分配</option>
                             </select>
                         </div>
                     </div>

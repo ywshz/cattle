@@ -2,6 +2,7 @@ package org.yws.cattle.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.yws.cattle.models.CommonResponse;
@@ -41,7 +42,7 @@ public class FileController {
 
     @RequestMapping(value = "save")
     @ResponseBody
-    public CommonResponse save(String name,Long parent,Integer fileType) {
+    public CommonResponse save(String name, Long parent, Integer fileType) {
         Long id = null;
         try {
             FileEntity fileEntity = new FileEntity();
@@ -50,19 +51,42 @@ public class FileController {
             fileEntity.setFileType(FileType.fromInteger(fileType));
             id = fileService.save(fileEntity);
         } catch (Exception e) {
-            return new CommonResponse(0, "保存失败", e.getMessage());
+            return new CommonResponse(CommonResponse.FAILED, "保存失败", e.getMessage());
         }
-        return new CommonResponse(1, "保存成功", id);
+        return new CommonResponse(CommonResponse.SUCCESS, "保存成功", id);
+    }
+
+    @RequestMapping(value = "rename")
+    @ResponseBody
+    public CommonResponse rename(Long id, String name) {
+        try {
+            FileEntity file = fileService.findOne(id);
+            if(file==null){
+                return CommonResponse.FAILED("重命名失败，ID不存在");
+            }else if (StringUtils.isEmpty(name)){
+                return CommonResponse.FAILED("新名字不能为空");
+            }
+            file.setName(name);
+            fileService.save(file);
+        } catch (Exception e) {
+            return CommonResponse.FAILED("重命名失败" + e.getMessage());
+        }
+        return CommonResponse.SUCCESS("重命名成功");
     }
 
     @RequestMapping(value = "delete")
     @ResponseBody
     public CommonResponse delete(Long id) {
         try {
-            fileService.delete(id);
+            if (fileService.findOne(id).getParent() != null) {
+                fileService.delete(id);
+            } else {
+                return CommonResponse.FAILED("根节点能删除");
+            }
+
         } catch (Exception e) {
-            return new CommonResponse(0, "删除失败", e.getMessage());
+            return CommonResponse.FAILED("删除失败" + e.getMessage());
         }
-        return new CommonResponse(1, "删除成功");
+        return CommonResponse.SUCCESS("删除成功");
     }
 }

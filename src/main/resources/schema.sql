@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 50155
 File Encoding         : 65001
 
-Date: 2015-07-29 18:09:07
+Date: 2015-07-31 10:12:15
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -29,14 +29,15 @@ CREATE TABLE `file` (
   PRIMARY KEY (`id`),
   KEY `parent` (`parent`),
   CONSTRAINT `file_ibfk_1` FOREIGN KEY (`parent`) REFERENCES `file` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of file
 -- ----------------------------
 INSERT INTO `file` VALUES ('1', null, '调度系统', '2015-07-27 21:50:16', '2015-07-27 21:50:16', '1');
 INSERT INTO `file` VALUES ('13', '1', '新文件夹', '2015-07-29 18:02:47', null, '1');
-INSERT INTO `file` VALUES ('14', '1', '新Job', '2015-07-29 18:02:50', null, '0');
+INSERT INTO `file` VALUES ('14', '1', 'ggggg', '2015-07-29 18:02:50', null, '0');
+INSERT INTO `file` VALUES ('16', '1', 'ttt', '2015-07-30 15:50:41', null, '0');
 
 -- ----------------------------
 -- Table structure for job
@@ -58,12 +59,13 @@ CREATE TABLE `job` (
   PRIMARY KEY (`id`),
   KEY `file_id` (`file_id`),
   CONSTRAINT `job_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `file` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 -- ----------------------------
 -- Records of job
 -- ----------------------------
-INSERT INTO `job` VALUES ('2', null, '0 0 0 * * ?', null, '0', '新Job', null, '0', '请编辑修改', '14', '0', null);
+INSERT INTO `job` VALUES ('2', null, '0 0 0 * * ?', '', '1', 'ggggg', null, '0', '请编辑修改ff', '14', '0', '12345');
+INSERT INTO `job` VALUES ('4', null, '0 0 0 * * ?', '', '0', 'ttt', '1', '0', '请编辑修改', '16', '0', '');
 
 -- ----------------------------
 -- Table structure for job_history

@@ -37,7 +37,7 @@ var JobTree = {
                 },
                 onClick: OnLeftClick,
                 onRename: zTreeOnRename,
-                onRemove: zTreeOnRemove,
+                //onRemove: zTreeOnRemove,
                 beforeRemove: zTreeBeforeRemove,
                 //onExpand: zTreeOnExpand,
                 onRightClick: rightClick
@@ -141,28 +141,26 @@ function onBodyMouseDown(event) {
 }
 
 function zTreeOnRename(event, treeId, treeNode, isCancel) {
-    $.post(BASE_PATH + "/jobs/updategroupname.do", {id: treeNode.id, name: treeNode.name}, function (res) {
-        if (res) alert("重命名成功.");
-        else alert("重命名失败，请刷新页面重试.");
+    $.post(BASE_PATH + "/file/rename", {id: treeNode.id, name: treeNode.name}, function (res) {
+        if (res.succeed) Noty.info("重命名成功.");
+        else Noty.error("重命名失败，请刷新页面重试.");
     });
 }
 
 
 function zTreeBeforeRemove(treeId, treeNode) {
-    return confirm("确认删除？");
+    if(confirm("确认删除？")){
+        $.post(BASE_PATH + "/file/delete.do", {id: treeNode.id}, function (res) {
+            if (res.succeed) {
+                Noty.info("删除成功");
+                JobTree.treeObject.removeNode(treeNode);
+            } else {
+                Noty.error("删除失败，" + res.message);
+            }
+        });
+    }
+    return false;
 }
-
-function zTreeOnRemove(event, treeId, treeNode) {
-    $.post(BASE_PATH + "/jobs/deletegroup.do", {id: treeNode.id}, function (res) {
-        if (res.success) alert("删除成功.");
-        else {
-            zTree = $.fn.zTree.getZTreeObj("tree");
-            zTree.reAsyncChildNodes(zTree.getNodes()[0], "refresh", false);
-            alert(res.message);
-        }
-    });
-}
-
 
 function zTreeOnExpand(event, treeId, treeNode) {
     $.post(BASE_PATH + "/tree/list_files", {

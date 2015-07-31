@@ -23,6 +23,16 @@ public class CommonResponse implements Serializable {
         this.message = message;
     }
 
+    public CommonResponse(int code, String message, Object data) {
+        this.code = code;
+        this.message = message;
+        this.data = data;
+    }
+
+    public static CommonResponse SUCCESS(String message, Object data) {
+        return new CommonResponse(SUCCESS, message, data);
+    }
+
     public static CommonResponse SUCCESS(String message) {
         return new CommonResponse(SUCCESS, message);
     }
@@ -31,14 +41,12 @@ public class CommonResponse implements Serializable {
         return CommonResponse.SUCCESS("");
     }
 
-    public static CommonResponse FAILED(String message) {
-        return new CommonResponse(FAILED, message);
+    public static CommonResponse FAILED(String message, Object data) {
+        return new CommonResponse(FAILED, message, data);
     }
 
-    public CommonResponse(int code, String message, Object data) {
-        this.code = code;
-        this.message = message;
-        this.data = data;
+    public static CommonResponse FAILED(String message) {
+        return new CommonResponse(FAILED, message);
     }
 
     public int getCode() {

@@ -350,19 +350,14 @@
             $("#menuContent").show();
             $(window).unbind("mousedown");
         },
-
-        removeFolder : function(fileId){
-
-        },
-
         removeJob : function(){
-            $.post(BASE_PATH + "/job/delete.do", {jobId: IndexPage.lastViewJob}, function (res) {
-                var nodes = IndexPage.treeObject.getSelectedNodes();
-                for (var i = 0, l = nodes.length; i < l; i++) {
-                    IndexPage.treeObject.removeNode(nodes[i]);
-                }
+            $.post(BASE_PATH + "/job/delete", {jobId: IndexPage.lastViewJob}, function (res) {
                 if (res.succeed) {
                     $("#right-content-div").addClass("hide");
+                    var nodes = IndexPage.treeObject.getSelectedNodes();
+                    for (var i = 0, l = nodes.length; i < l; i++) {
+                        IndexPage.treeObject.removeNode(nodes[i]);
+                    }
                     Noty.info("删除成功");
                 } else {
                     Noty.error("删除失败，" + res.message);
